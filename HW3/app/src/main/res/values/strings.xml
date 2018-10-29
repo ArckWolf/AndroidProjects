@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">HW3</string>
+    <string name="Music">Music</string>
+    <string name="Counter">Counter</string>
+    <string name="MY_PREFERENCE_FILE">MY_PREFERENCE_FILE</string>
+</resources>

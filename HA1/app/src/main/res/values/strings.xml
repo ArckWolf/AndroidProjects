@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">HA1</string>
+    <string name="title_activity_contact_details">ContactDetails</string>
+    <string name="MY_PREFERENCE_FILE">MY_PREFERENCE_FILE</string>
+    <string name="ContactDetails">Contact Details:</string>
+    <string name="sendEmail">Send E-mail</string>
+
+</resources>

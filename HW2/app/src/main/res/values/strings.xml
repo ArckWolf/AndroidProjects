@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">HW2</string>
+    <string name="Picture">Picture</string>
+    <string name="Details">Details</string>
+    <string name="Save">Save</string>
+    <string name="Name">Name</string>
+    <string name="Position">Position</string>
+</resources>

@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Homework 1</string>
+    <string name="btnToC">To C</string>
+    <string name="btnToF">To F</string>
+    <string name="startVal">Insert value</string>
+    <string name="result">Result:</string>
+</resources>
