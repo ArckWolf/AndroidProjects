@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Image Processing</string>
+
+    <string name="tasks">
+    1. Your app should allow the user to select some image from their phones storage (e.g. camera pictures folder) (2.5 pts)\n\n
+    2.Sending the image from your Android app to your Heroku app using a HTTP POST request (5 pts)\n\n
+    3. Handling the request on Heroku, e.g. storing the image locally (5 pts)\n\n
+    4. Processing the image (2.5 pts)\n\n
+    5. Replying to the HTTP POST request with the processed image file (5 pts)\n\n
+    6. Handling Heroku app\'s response inside the Android app (5 pts)\n\n
+    </string>
+    <string name="btn_local">Local</string>
+    <string name="btn_cloud">Cloud</string>
+</resources>
