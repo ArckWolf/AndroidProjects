@@ -33,22 +33,22 @@ import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String HEROKU_URL = "http://android-image-processing.herokuapp.com/filter"; //TODO
-    private Context mContext;
-    Uri currImageURI;
+    private static final String HEROKU_URL = "http://android-image-processing.herokuapp.com/blur_filter";
     private static int RESULT_LOAD_IMAGE = 1;
-    private static final int PICK_FROM_GALLERY = 2;
     Bitmap thumbnail = null;
     Uri selectedImage;
     String picturePath;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mContext = getApplicationContext();
     }
 
     public void localButtonClicked(View v){
@@ -90,11 +90,9 @@ public class MainActivity extends AppCompatActivity {
         protected Bitmap processImage(Bitmap inputBitmap) {
             //TODO send an image to the cloud, convert the response to a Bitmap, return the Bitmap
             Log.e("******","START");
+            Bitmap finalImage = inputBitmap;
             try
             {
-                String path = getResources().openRawResource(R.raw.kutsu_juku).toString(); //"android.resource://" + getPackageName() + "/" + R.raw.kutsu_juku;
-                Log.e("******",path);
-
                 HttpClient client = new DefaultHttpClient();
 
                 File file = new File(picturePath);
@@ -107,10 +105,29 @@ public class MainActivity extends AppCompatActivity {
                 HttpEntity entity = entityBuilder.build();
                 post.setEntity(entity);
 
+
+
                 HttpResponse response = client.execute(post);
                 HttpEntity httpEntity = response.getEntity();
 
-                Log.e("result", EntityUtils.toString(httpEntity));
+                InputStream instream = httpEntity.getContent();
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                int bufferSize = 1024;
+                byte[] buffer = new byte[bufferSize];
+                int len = 0;
+                try {
+                    while ((len = instream.read(buffer)) != -1) {
+                        baos.write(buffer, 0, len);
+                    }
+                    baos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                byte[] b = baos.toByteArray();
+                finalImage = BitmapFactory.decodeByteArray(b, 0, b.length);
+
+                Log.e("b.length ", ""+b.length);
             }
             catch(Exception e)
             {
@@ -118,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
             }
             Log.e("******","END");
 
-            return inputBitmap;
+            return finalImage;
         }
     }
 
