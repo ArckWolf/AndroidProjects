@@ -1,5 +1,6 @@
 package ee.ut.cs.mc.and.imageprocessing;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
@@ -11,6 +12,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.CursorLoader;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -44,11 +47,26 @@ public class MainActivity extends AppCompatActivity {
     Bitmap thumbnail = null;
     Uri selectedImage;
     String picturePath;
+    Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mContext=this;
+
+        String[] requestedPermissions = new String[]{
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+        };
+
+        ActivityCompat.requestPermissions(this, requestedPermissions, 5);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        Toast.makeText(this, "Permissions granted", Toast.LENGTH_SHORT).show();
     }
 
     public void localButtonClicked(View v){
@@ -57,10 +75,9 @@ public class MainActivity extends AppCompatActivity {
         new LocalTask().execute(bitmap);
     }
     public void cloudButtonClicked(View v){
-        // TODO!
         Intent in = new   Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(in, RESULT_LOAD_IMAGE);
-        Toast.makeText(this, "TODO: Start execution of your CloudTask here!", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Choose your image", Toast.LENGTH_LONG).show();
     }
 
     /** Our abstract AsyncTask for image processing.
@@ -85,10 +102,8 @@ public class MainActivity extends AppCompatActivity {
 
     /** Send file to Heroku app and display the response image in UI */
     private class CloudTask extends ImageProcessingAsyncTask {
-        //TODO
         @Override
         protected Bitmap processImage(Bitmap inputBitmap) {
-            //TODO send an image to the cloud, convert the response to a Bitmap, return the Bitmap
             Log.e("******","START");
             Bitmap finalImage = inputBitmap;
             try
@@ -108,26 +123,29 @@ public class MainActivity extends AppCompatActivity {
 
 
                 HttpResponse response = client.execute(post);
-                HttpEntity httpEntity = response.getEntity();
 
-                InputStream instream = httpEntity.getContent();
+                if (response.getStatusLine().getStatusCode() == 200) {
+                    HttpEntity httpEntity = response.getEntity();
 
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                int bufferSize = 1024;
-                byte[] buffer = new byte[bufferSize];
-                int len = 0;
-                try {
-                    while ((len = instream.read(buffer)) != -1) {
-                        baos.write(buffer, 0, len);
+                    InputStream instream = httpEntity.getContent();
+
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    int bufferSize = 1024;
+                    byte[] buffer = new byte[bufferSize];
+                    int len = 0;
+                    try {
+                        while ((len = instream.read(buffer)) != -1) {
+                            baos.write(buffer, 0, len);
+                        }
+                        baos.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                    baos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                byte[] b = baos.toByteArray();
-                finalImage = BitmapFactory.decodeByteArray(b, 0, b.length);
+                    byte[] b = baos.toByteArray();
+                    finalImage = BitmapFactory.decodeByteArray(b, 0, b.length);
 
-                Log.e("b.length ", ""+b.length);
+                    Log.e("b.length ", ""+b.length);
+                }
             }
             catch(Exception e)
             {
@@ -139,6 +157,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -147,22 +167,25 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
 
             selectedImage = data.getData();
-            Log.e("******selectedImage ",selectedImage.toString());
 
             String[] filePathColumn = {MediaStore.Images.Media.DATA};
             Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
             cursor.moveToFirst();
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
             picturePath = cursor.getString(columnIndex);
-            Log.e("******picturePath ",picturePath);
 
             cursor.close();
             thumbnail = (BitmapFactory.decodeFile(picturePath));
 
+            //Start Cloud TASK!
+            Toast.makeText(this, "Blurring image...", Toast.LENGTH_LONG).show();
             new CloudTask().execute(thumbnail);
         }
     }
 
+    private void message(String ms){
+        Toast.makeText(mContext, ms, Toast.LENGTH_LONG).show();
+    }
     /** --- Code below this comment does not need to be changed --- */
 
     private class LocalTask extends ImageProcessingAsyncTask {
@@ -199,4 +222,7 @@ public class MainActivity extends AppCompatActivity {
                 ViewGroup.LayoutParams.MATCH_PARENT));
         builder.show();
     }
+
+
+
 }
